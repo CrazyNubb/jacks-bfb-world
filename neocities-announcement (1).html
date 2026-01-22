@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self' https://announcementpanel.crazyn00b12313.workers.dev">
+    <title>VRChat Announcement Control</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="password"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            padding: 5px;
+            font-size: 18px;
+        }
+
+        .toggle-password:hover {
+            color: white;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .toggle-info h3 {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .toggle-info p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 56px;
+            height: 32px;
+            background: #4a5568;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle.active {
+            background: #48bb78;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .status.error {
+            background: rgba(245, 101, 101, 0.2);
+            color: #fed7d7;
+            border: 1px solid rgba(245, 101, 101, 0.3);
+        }
+
+        .status.success {
+            background: rgba(72, 187, 120, 0.2);
+            color: #c6f6d5;
+            border: 1px solid rgba(72, 187, 120, 0.3);
+        }
+
+        .state-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 24px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .state-box h2 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .state-box p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .state-box span {
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Screen -->
+        <div id="loginScreen">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <svg class="icon" style="width: 48px; height: 48px; margin: 0 auto; color: rgba(255,255,255,0.8);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+            <h1>VRChat Announcement</h1>
+            <p class="subtitle">Control Panel</p>
+
+            <div id="loginStatus"></div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="loginPassword" placeholder="Enter password">
+                    <button class="toggle-password" onclick="togglePasswordVisibility('loginPassword')">👁️</button>
+                </div>
+            </div>
+
+            <button class="btn" onclick="handleLogin()">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                </svg>
+                Access Panel
+            </button>
+        </div>
+
+        <!-- Control Panel -->
+        <div id="controlPanel" class="hidden">
+            <h1>Announcement Control</h1>
+            <p class="subtitle">Manage your VRChat world announcements</p>
+
+            <div id="controlStatus"></div>
+
+            <div class="input-group">
+                <label>Announcement Text</label>
+                <textarea id="announcementText" placeholder="Enter your announcement message..."></textarea>
+            </div>
+
+            <div class="toggle-container">
+                <div class="toggle-info">
+                    <h3>Visibility</h3>
+                    <p>Show announcement in VRChat world</p>
+                </div>
+                <div class="toggle" id="visibilityToggle" onclick="toggleVisibility()">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="handleUpdate()">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+                Update Announcement
+            </button>
+
+            <div class="state-box">
+                <h2>Current State</h2>
+                <p><span>Visible:</span> <span id="stateVisible">No</span></p>
+                <p><span>Message:</span> <span id="stateMessage">(empty)</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Your Cloudflare Worker URL
+        const WORKER_URL = 'https://announcementpanel.crazyn00b12313.workers.dev';
+
+        let password = '';
+        let isVisible = false;
+
+        function showStatus(elementId, type, message) {
+            const statusEl = document.getElementById(elementId);
+            const icon = type === 'error' ? '⚠️' : '✓';
+            statusEl.innerHTML = `<div class="status ${type}">${icon} ${message}</div>`;
+            setTimeout(() => statusEl.innerHTML = '', 4000);
+        }
+
+        function togglePasswordVisibility(inputId) {
+            const input = document.getElementById(inputId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function toggleVisibility() {
+            isVisible = !isVisible;
+            const toggle = document.getElementById('visibilityToggle');
+            if (isVisible) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+
+        async function handleLogin() {
+            const passwordInput = document.getElementById('loginPassword');
+            password = passwordInput.value;
+
+            if (!password) {
+                showStatus('loginStatus', 'error', 'Please enter a password');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${WORKER_URL}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('controlPanel').classList.remove('hidden');
+                    await loadCurrentState();
+                } else {
+                    showStatus('loginStatus', 'error', 'Invalid password');
+                }
+            } catch (error) {
+                showStatus('loginStatus', 'error', 'Connection failed');
+            }
+        }
+
+        async function loadCurrentState() {
+            try {
+                const response = await fetch(`${WORKER_URL}/state`);
+                const data = await response.json();
+                
+                document.getElementById('announcementText').value = data.announcement || '';
+                isVisible = data.isVisible || false;
+                
+                const toggle = document.getElementById('visibilityToggle');
+                if (isVisible) {
+                    toggle.classList.add('active');
+                }
+                
+                updateStateDisplay(data.announcement, data.isVisible);
+            } catch (error) {
+                console.error('Failed to load state:', error);
+            }
+        }
+
+        async function handleUpdate() {
+            const announcement = document.getElementById('announcementText').value;
+
+            try {
+                const response = await fetch(`${WORKER_URL}/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        password,
+                        announcement,
+                        isVisible
+                    })
+                });
+
+                if (response.ok) {
+                    showStatus('controlStatus', 'success', 'Announcement updated!');
+                    updateStateDisplay(announcement, isVisible);
+                } else {
+                    showStatus('controlStatus', 'error', 'Update failed');
+                }
+            } catch (error) {
+                showStatus('controlStatus', 'error', 'Connection failed');
+            }
+        }
+
+        function updateStateDisplay(announcement, visible) {
+            document.getElementById('stateVisible').textContent = visible ? 'Yes ✓' : 'No ✗';
+            document.getElementById('stateMessage').textContent = announcement || '(empty)';
+        }
+
+        // Allow Enter key to submit login
+        document.getElementById('loginPassword').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') handleLogin();
+        });
+    </script>
+</body>
+</html>
